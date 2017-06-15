@@ -1,7 +1,7 @@
 (function () {
 	var mc = window.mapController = window.mapController || {};
 	
-	var serverURL = "http://randomDomain.com:5000/";
+	var serverURL = "http://52.34.170.97:5000/";
 	
 	var map;
 	var markers = [];
