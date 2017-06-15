@@ -1,0 +1,8 @@
+env:
+  global:
+    #secure variable contains values for AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+    - secure: OxjH/KmWlnTgDWRqphPUAwJ2vFohMAUUx6g0J8p9ERCQ/L5Ns47J/ZBeozJUdm4jmFWaTUXBgwSZirqCq+6ZtJmbM6nATKORGS6ACpVjKX3PhFNn9oyAgtpDs3F6ZKUwHLivn8u8C5KuMVfBkBPnX1NaGUxtr660WZdEw+eh8RyiVxF5OuZtv7uZ7oEKnGvVHPQ+XeyPrw1eOk++PcDPJUnyI3oCgFGv2PDwilPkVccS0nVR8flC0Glgxt+uaUNFHHmNbodtPbIHWwrBI5p1bH2/9hwteGNGsJU8SrjnR1vCbAKgGTENCS4dLhQM92PU54xQJMLLPswEU/U4WM5qRg==
+
+build:
+  on_success:
+    - aws s3 sync $SHIPPABLE_BUILD_DIR "s3://localcityclient" --region "us-west-2"
