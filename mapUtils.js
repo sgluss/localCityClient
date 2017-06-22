@@ -72,7 +72,7 @@
 	}
 
 	function setNewSelectionRadius(clickEvent) {
-		selectRadius = getDistance(selectCenter._latlng.lat, selectCenter._latlng.lng, clickEvent.latlng.lat, clickEvent.latlng.lng);
+		selectRadius = getDistance(selectCenter._latlng, clickEvent.latlng);
 	
 		selectCircle = L.circle([selectCenter._latlng.lat, selectCenter._latlng.lng], {
 			color: 'green',
@@ -81,12 +81,13 @@
 			radius: (selectRadius * 1000)
 		}).addTo(map);
 
-		updateSelection(selectCenter._latlng.lat, selectCenter._latlng.lng, selectRadius);
+		updateSelection(selectCenter._latlng, selectRadius);
 
 		map.removeLayer(selectCenter);
 		selectCenter = null;
 	}
 
+	// Query server for cities which will fit in current mapView, then populate the map
 	function populateMapMarkers() {
 		var mapBoundNorthEast = map.getBounds().getNorthEast();
 		var mapDistance = mapBoundNorthEast.distanceTo(map.getCenter())/1000;
@@ -110,7 +111,7 @@
 					createMarkerFromCityData(JSON.parse(response[i]));
 				}
 				if (selectCircle) {
-					updateSelection(selectCircle._latlng.lat, selectCircle._latlng.lng, selectRadius);
+					updateSelection(selectCircle._latlng, selectRadius);
 				}
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) { 
@@ -120,12 +121,12 @@
 		});
 	}
     
-    function updateSelection(newLat, newLng, newRadius){
+	// Determine which city markers fall within the selection, and set a sorted list and population total
+    function updateSelection(newLatLng, newRadius){
 		mc.selectedPopulationSum = 0;
         
         for (var i = 0; i < markers.length; i++) {
-			var distance = getDistance(newLat, newLng, 
-								markers[i]._latlng.lat, markers[i]._latlng.lng);
+			var distance = getDistance(newLatLng, markers[i]._latlng);
 			if (distance < newRadius) {
 				markers[i].options.color = selectedMarkerColor;
 				markers[i].redraw();
@@ -148,29 +149,33 @@
 		sb.updateCitySelectionDisplay(mc.selectedMarkers);
 	}
 
+	// reset all markers on the map back to deselected
 	function resetSelectedMarkers() {
 		for (var i = 0; i < mc.selectedMarkers.length; i++) {
 		 	mc.selectedMarkers[i].options.color = defaultMarkerColor;
 			mc.selectedMarkers[i].redraw();	
 		}
+		// cleanup
 		mc.selectedMarkers = [];
         mc.selectedPopulationSum = 0
 	}
 	
-	function getDistance(lat1, lon1, lat2, lon2) {
+	function getDistance(latLon1, latLon2) {
 		var p = 0.017453292519943295;    // Math.PI / 180
 		var c = Math.cos;
-		var a = 0.5 - c((lat2 - lat1) * p)/2 + 
-			  c(lat1 * p) * c(lat2 * p) * 
-			  (1 - c((lon2 - lon1) * p))/2;
+		var a = 0.5 - c((latLon2.lat - latLon1.lat) * p)/2 + 
+			  c(latLon1.lat * p) * c(latLon2.lat * p) * 
+			  (1 - c((latLon2.lng - latLon1.lng) * p))/2;
 
 		return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
 	}
 	
+	// Remove all markers from map
 	function clearAllMarkers() {
 		for (var i = 0; i < markers.length; i++) {
 			map.removeLayer(markers[i]);
 		}
+		// cleanup
 		markers = [];
 		mc.selectedMarkers = [];
         mc.selectedPopulationSum = 0;
@@ -193,6 +198,7 @@
 		markers.push(marker);
 	}
 	
+	// For testing use only
 	function testMapMarkersAndGeometry() {
 		var marker = L.marker([51.5, -0.09]).addTo(map);
 		

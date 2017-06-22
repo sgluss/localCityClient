@@ -8,10 +8,12 @@
         selectedCities = document.getElementById("cityListing");
     };
 
+	// Set total population readout in DOM
     sb.updateTotalPopulationDisplay = function updateTotalPopulationOutput(value){
         totalPopulationOutput.innerText = value;
     };
 
+	// Provides alternating colors
     function getColorCodeForIndex(index) {
         switch(index % 3) {
             case 0:
@@ -30,6 +32,7 @@
     </div>
     `;
 
+	// Build and set HTML in DOM to display list of citie names and populations
     sb.updateCitySelectionDisplay = function updateCitySelectionDisplay(selectedMarkers) {
         var html = "";
         // enforce a maximum number of cities to output
