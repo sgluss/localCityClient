@@ -1,5 +1,6 @@
 (function () {
 	var mc = window.mapController = window.mapController || {};
+	var sb = window.sideBar = window.sideBar || {};
 
     var serverURL = "http://52.34.170.97:5000/";
 
@@ -134,8 +135,17 @@
 		}
         // Sort selected cities by population
         mc.selectedMarkers.sort(function(a,b) {
-            return a.data.population < b.data.population ? 1 : 0;
+            if (a.data.population < b.data.population) {
+				return 1;
+			} 
+			else if (a.data.population > b.data.population) {
+				return -1;
+			}
+			return 0;
         });
+
+		sb.updateTotalPopulationDisplay(mc.selectedPopulationSum);
+		sb.updateCitySelectionDisplay(mc.selectedMarkers);
 	}
 
 	function resetSelectedMarkers() {

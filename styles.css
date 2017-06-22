@@ -1,3 +1,47 @@
+div {
+
+}
+
+body > div {
+	display: table-cell;
+}
+
+#leafletMapHolder {
+	width: 100%;
+}
+
 #leafletMap { 
 	height: 960px;
+	width: 100%;
+}
+
+#infoPanel {
+	width: 20em;
+}
+
+#infoPanel {
+	vertical-align: top;
+	padding: 8px;
+}
+
+#infoPanel > div {
+	width: 200px;
+	max-height: 90vh;
+	overflow: auto;
+}
+
+#totalPopHeader {
+
+}
+
+#totalPopulation {
+	height: 2em;
+}
+
+#cityListingHeader {
+
+}
+
+#cityListing {
+
 }
