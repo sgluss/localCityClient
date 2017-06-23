@@ -10,11 +10,15 @@
 	var map;
 	var markers = [];
 	
+	var countryCodes = {};
+
 	var selectCenter = null;
 	var selectCircle = null;
 	var selectRadius = 0;
+
 	mc.selectedMarkers = [];
     mc.selectedPopulationSum = 0;
+	mc.countryFilter = "none";
 
     mc.initMap = function initMap() {
 		// set up the map
@@ -51,6 +55,42 @@
 		return map;
 	}
 	
+	mc.countryFilterChanged = function countryFilterChanged(newCode) {
+		mc.selectedPopulationSum = 0;
+		var filteredCityMarkers = [];
+
+		for (var i = 0; i < mc.selectedMarkers.length; i++) {
+			var marker = mc.selectedMarkers[i]; 
+			if (newCode === "none" || newCode === marker.data["country code"]) {
+				if (marker.options.color !== selectedMarkerColor) {
+					marker.options.color = selectedMarkerColor;
+					marker.redraw();
+				}
+				filteredCityMarkers.push(marker);
+				mc.selectedPopulationSum += marker.data.population;
+			}
+			else if(newCode !== marker.data["country code"] && marker.options.color === selectedMarkerColor) {
+				marker.options.color = defaultMarkerColor;
+				marker.redraw();
+			}
+		}
+        // Sort filtered cities by population
+        filteredCityMarkers.sort(cityPopCompare);
+
+		sb.updateTotalPopulationDisplay(mc.selectedPopulationSum);
+		sb.updateCitySelectionDisplay(filteredCityMarkers);
+	}
+
+	function cityPopCompare(a,b) {
+            if (a.data.population < b.data.population) {
+				return 1;
+			} 
+			else if (a.data.population > b.data.population) {
+				return -1;
+			}
+			return 0;
+        }
+
 	function setNewSelectionCenter(clickEvent) {
 		if (selectCircle) {
 			map.removeLayer(selectCircle);
@@ -110,6 +150,7 @@
 				for (var i = 0; i < response.length; i++) {
 					createMarkerFromCityData(JSON.parse(response[i]));
 				}
+				sb.setCountryFilters(countryCodes, mc.countryFilter);
 				if (selectCircle) {
 					updateSelection(selectCircle._latlng, selectRadius);
 				}
@@ -124,29 +165,25 @@
 	// Determine which city markers fall within the selection, and set a sorted list and population total
     function updateSelection(newLatLng, newRadius){
 		mc.selectedPopulationSum = 0;
-        
+		var filteredCityMarkers = [];
+
         for (var i = 0; i < markers.length; i++) {
 			var distance = getDistance(newLatLng, markers[i]._latlng);
 			if (distance < newRadius) {
-				markers[i].options.color = selectedMarkerColor;
-				markers[i].redraw();
+				if (mc.countryFilter === "none" || mc.countryFilter === markers[i].data["country code"]) {
+					markers[i].options.color = selectedMarkerColor;
+					markers[i].redraw();
+					filteredCityMarkers.push(markers[i]);
+					mc.selectedPopulationSum += markers[i].data.population;
+			}
 				mc.selectedMarkers.push(markers[i]);
-                mc.selectedPopulationSum += markers[i].data.population;
 			}
 		}
-        // Sort selected cities by population
-        mc.selectedMarkers.sort(function(a,b) {
-            if (a.data.population < b.data.population) {
-				return 1;
-			} 
-			else if (a.data.population > b.data.population) {
-				return -1;
-			}
-			return 0;
-        });
+        // Sort filtered cities by population
+        filteredCityMarkers.sort(cityPopCompare);
 
 		sb.updateTotalPopulationDisplay(mc.selectedPopulationSum);
-		sb.updateCitySelectionDisplay(mc.selectedMarkers);
+		sb.updateCitySelectionDisplay(filteredCityMarkers);
 	}
 
 	// reset all markers on the map back to deselected
@@ -176,12 +213,15 @@
 			map.removeLayer(markers[i]);
 		}
 		// cleanup
+		countryCodes = {};
 		markers = [];
 		mc.selectedMarkers = [];
         mc.selectedPopulationSum = 0;
 	}
 	
 	function createMarkerFromCityData(city) {
+		countryCodes[city["country code"]] = 1;
+		
 		var latLng = [parseFloat(city.latitude), parseFloat(city.longitude)];
 		var options = {
 			color : defaultMarkerColor,

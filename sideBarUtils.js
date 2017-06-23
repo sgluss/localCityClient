@@ -1,11 +1,17 @@
 (function () {
 	var sb = window.sideBar = window.sideBar || {};
+	var mc = window.mapController = window.mapController || {};
 
     var totalPopulationOutput;
+    var selectedCities;
+    var countryFilterSelector;
 
     sb.init = function init() {
         totalPopulationOutput = document.getElementById("totalPopulation");
         selectedCities = document.getElementById("cityListing");
+        countryFilterPicker = document.getElementById("countryFilterPicker");
+
+        countryFilterPicker.addEventListener("change", filterPickerStateChanged);
     };
 
 	// Set total population readout in DOM
@@ -48,5 +54,37 @@
         selectedCities.innerHTML = html;
         selectedCities.scrollTop = 0;
     };
+
+    sb.setCountryFilters = function setCountryFilters(countryCodes, oldCode) {
+        var html = '<option value="none">No Filter</option>';
+        var countries = Object.getOwnPropertyNames(countryCodes);
+        for (var i = 0; i < countries.length; i++) {
+            html += '<option value="' + countries[i] + '">' + countries[i] + '</option>';
+        }
+        countryFilterPicker.innerHTML = html;
+        
+        if (countryCodes[oldCode]) {
+            // Offset by 1 for "none"
+            countryFilterPicker.selectedIndex = countries.indexOf(oldCode) + 1;
+        }
+        else {
+            countryFilterPicker.selectedIndex = 0;
+            setNewCountryFilter("none");
+        }
+
+    }
+
+    function filterPickerStateChanged(e) {
+        var target = e.currentTarget;
+        var newValue = target.options[target.selectedIndex].value;
+        
+        mc.countryFilter = newValue;
+        mc.countryFilterChanged(mc.countryFilter);
+    }
+
+    function setNewCountryFilter(newFilter) {
+        mc.countryFilter = newFilter;
+        mc.countryFilterChanged(mc.countryFilter);
+    }
 
 }());
