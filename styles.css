@@ -1,5 +1,6 @@
-div {
-
+body {
+	margin: 0px;
+	overflow:auto;
 }
 
 body > div {
@@ -11,37 +12,36 @@ body > div {
 }
 
 #leafletMap { 
-	height: 960px;
+	height:100vh;
 	width: 100%;
 }
 
-#infoPanel {
-	width: 20em;
+#infoPanelHolder {
+	padding: 8px;
+	height: calc(100vh - 16px);
+	vertical-align: top;
 }
 
 #infoPanel {
-	vertical-align: top;
-	padding: 8px;
+	width: 200px;
+	display: table;
+	height: 100%;
 }
 
 #infoPanel > div {
-	width: 200px;
-	max-height: 90vh;
-	overflow: auto;
-}
-
-#totalPopHeader {
-
+	display: table-row;
 }
 
 #totalPopulation {
 	height: 2em;
 }
 
-#cityListingHeader {
-
+#cityListingHolder {
+	height: 100%;
+	overflow:auto;
 }
 
 #cityListing {
-
+	height: 100%;
+	overflow-y: auto;
 }

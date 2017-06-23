@@ -10,7 +10,7 @@
 	   integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
 	   crossorigin=""/>
 	<link rel="stylesheet" href="styles.css">
-	
+
 	<title>LocalCity Demo Page</title>
 </head>
 
@@ -18,13 +18,17 @@
 	<div id="leafletMapHolder">
 		<div id="leafletMap"></div>
 	</div>
-	<div id="infoPanel">
-		<div id="totalPopHeader">Total Population of Selection:</div>
-		<div id="totalPopulation"></div>
-		<div id="cityListingHeader">Cities in Selection:</div>
-		<div id="cityListing"></div>
+	
+	<div id="infoPanelHolder">
+		<div id="infoPanel">
+			<div id="totalPopHeader">Total Population of Selection:</div>
+			<div id="totalPopulation"></div>
+			<div id="cityListingHeader">Cities in Selection:</div>
+			<div id="cityListingHolder">
+				<div id="cityListing"></div>
+			</div>
+		</div>
 	</div>
-
 	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"
    integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
    crossorigin=""></script>
