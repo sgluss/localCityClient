@@ -9,7 +9,8 @@
 
 	var map;
 	var markers = [];
-	
+	var oldCityMapping = {};
+
 	var countryCodes = {};
 
 	var selectCenter = null;
@@ -136,7 +137,7 @@
 		var payload = {
 			lat : centerPoint.lat,
 			lng : centerPoint.lng,
-			radius : mapDistance
+			radius : mapDistance * 1.2 // try to edge cache some cities, may not be rendered
 		};
 		
 		$.ajax ({
@@ -146,7 +147,8 @@
 			contentType: "application/json",
 			success: function(response){
 				response = JSON.parse(response);
-				clearAllMarkers();
+				var mapping = createMapping(response);
+				clearAllMarkers(mapping);
 				for (var i = 0; i < response.length; i++) {
 					createMarkerFromCityData(JSON.parse(response[i]));
 				}
@@ -154,12 +156,22 @@
 				if (selectCircle) {
 					updateSelection(selectCircle._latlng, selectRadius);
 				}
+				// Store city mapping for the next time a query needs to be rendered
+				oldCityMapping = mapping;
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) { 
 				console.log("Status: " + textStatus); 
 				console.log("Error: " + errorThrown); 
 			}
 		});
+	}
+
+	function createMapping(response) {
+		var mapping = {};
+		for (var i = 0; i < response.length; i++) {
+			mapping[JSON.parse(response[i]).geonameid] = true;
+		}
+		return mapping;
 	}
     
 	// Determine which city markers fall within the selection, and set a sorted list and population total
@@ -208,34 +220,46 @@
 	}
 	
 	// Remove all markers from map
-	function clearAllMarkers() {
+	function clearAllMarkers(newCities) {
+		var newMarkers = [];
+		
 		for (var i = 0; i < markers.length; i++) {
-			map.removeLayer(markers[i]);
+			// if the marker would not be rendered in the new viewport, remove it
+			if (!newCities[markers[i].data.geonameid]) {
+				map.removeLayer(markers[i]);
+			} 
+			else {
+				newMarkers.push(markers[i]);
+			}
 		}
 		// cleanup
 		countryCodes = {};
-		markers = [];
+		markers = newMarkers;
 		mc.selectedMarkers = [];
         mc.selectedPopulationSum = 0;
 	}
 	
 	function createMarkerFromCityData(city) {
 		countryCodes[city["country code"]] = 1;
-		
-		var latLng = [parseFloat(city.latitude), parseFloat(city.longitude)];
-		var options = {
-			color : defaultMarkerColor,
-			radius : 4,
-			weight : 2
-		};
-		var marker = L.circleMarker(latLng, options).addTo(map);
-		
-		marker.bindTooltip(city.name);
-		
-        // Add the city data from the server, it will be needed later
-        marker.data = city;
 
-		markers.push(marker);
+		// Only render marker if it is not already loaded to the map
+		if (!oldCityMapping[city.geonameid]) {
+			var latLng = [parseFloat(city.latitude), parseFloat(city.longitude)];
+			var options = {
+				color : defaultMarkerColor,
+				radius : 4,
+				weight : 2
+			};
+
+			var marker = L.circleMarker(latLng, options).addTo(map);
+		
+			marker.bindTooltip(city.name);
+		
+			// Add the city data from the server, it will be needed later
+			marker.data = city;
+
+			markers.push(marker);
+		}
 	}
 	
 	// For testing use only
